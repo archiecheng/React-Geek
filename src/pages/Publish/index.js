@@ -49,12 +49,28 @@ const Publish = () => {
       content,
       cover: {
         type: imageType, // 封面模式
-        images: imageList.map(item => item.response.data.url), // 图片列表
+        // 这里的url处理逻辑只是在新增时候的逻辑
+        // 编辑的时候也需要做处理
+        images: imageList.map(item => {
+          if (item.response) {
+            return item.response.data.url
+          } else {
+            return item.url
+          }
+        }), // 图片列表
       },
       channel_id,
     };
     // 2. 调用接口提交
-    await request.post("/mp/articles?draft=false", reqData);
+    // 处理调用不同的接口 新增 - 新增接口 编辑状态 - 更新接口 id
+    if (articleId) {
+      // 更新接口
+      request.put(`/mp/articles/${articleId}?draft=false`,reqData)
+    } else {
+      // 新增
+      await request.post("/mp/articles?draft=false", reqData);
+    }
+    
     console.log(formValue);
   };
 
