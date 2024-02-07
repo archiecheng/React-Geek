@@ -22,33 +22,40 @@ const { Option } = Select;
 
 const Publish = () => {
   // 获取频道列表
-  const [channelList, setChannelList] = useState([])
+  const [channelList, setChannelList] = useState([]);
 
   useEffect(() => {
     // 1. 封装函数 在函数体内调用接口
     const getChannelList = async () => {
-      const res = await request.get('/channels')
-      setChannelList(res.data.channels)
-    }
+      const res = await request.get("/channels");
+      setChannelList(res.data.channels);
+    };
     // 2. 调用函数
-    getChannelList()
-  },[])
+    getChannelList();
+  }, []);
   // 提交表单
   const onFinish = async (formValue) => {
-    const { title, content, channel_id } = formValue
+    const { title, content, channel_id } = formValue;
     // 1. 按照接口文档的格式处理收集到的表单数据
     const reqData = {
       title,
       content,
-      cover:{
-        type:0,
-        images:[]
+      cover: {
+        type: 0,
+        images: [],
       },
-      channel_id
-    }
+      channel_id,
+    };
     // 2. 调用接口提交
-    await request.post('/mp/articles?draft=false', reqData)
+    await request.post("/mp/articles?draft=false", reqData);
     console.log(formValue);
+  };
+
+  // 上传回调
+  const [imageList, setImagelist] = useState([])
+  const onChange = (value) => {
+    console.log('正在上传中...',value);
+    setImagelist(value.fileList)
   }
   return (
     <div className="publish">
@@ -82,11 +89,36 @@ const Publish = () => {
           >
             <Select placeholder="请选择文章频道" style={{ width: 400 }}>
               {/* value属性，用户选中之后会自动收集起来作为接口的提交字段 */}
-              {
-                channelList.map(item => <Option value={item.id} key={item.id}>{item.name}</Option>)
-              }
+              {channelList.map((item) => (
+                <Option value={item.id} key={item.id}>
+                  {item.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
+
+          <Form.Item label="封面">
+            <Form.Item name="type">
+              <Radio.Group>
+                <Radio value={1}>单图</Radio>
+                <Radio value={3}>三图</Radio>
+                <Radio value={0}>无图</Radio>
+              </Radio.Group>
+            </Form.Item>
+            {/* listType: 决定选择文件框的外观样式 showUploadList: 控制显示上传列表 */}
+            <Upload
+              name="image"
+              listType="picture-card"
+              showUploadList
+              action={"http://geek.itheima.net/v1_0/upload"}
+              onChange={onChange}
+            >
+              <div style={{ marginTop: 8 }}>
+                <PlusOutlined />
+              </div>
+            </Upload>
+          </Form.Item>
+
           <Form.Item
             label="内容"
             name="content"
